@@ -102,7 +102,7 @@ export default function SingleProductPage() {
           <div className="w-full lg:w-1/2 space-y-4">
             <div>
               <div className="inline-block bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium mb-2 capitalize">
-                {product.category}
+                {Array.isArray(product.category) ? product.category.join(', ') : product.category}
               </div>
               <h2 className="text-2xl lg:text-3xl font-bold mb-2">{product.title}</h2>
               <p className="text-gray-600 mb-4 leading-relaxed">{product.description}</p>

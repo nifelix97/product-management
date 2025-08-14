@@ -15,7 +15,6 @@ export default function NavBar() {
   return (
     <div className='bg-primary-50 p-4 shadow-md fixed w-full z-10'>
       <div className='flex justify-between items-center'>
-        {/* Logo and Title */}
         <div className="flex items-center">
           <div className="flex items-center justify-center w-10 h-10 bg-primary-600 text-white rounded">
             <FiPackage className='text-primary-50 size-6' />
@@ -26,17 +25,16 @@ export default function NavBar() {
           </h1>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className='hidden md:block'>
           <ul className='flex space-x-6'>
             <li className='flex items-center space-x-2 hover:bg-primary-100 px-3 py-2 rounded-md transition-colors'>
               <CiHome className='text-primary-600 hover:text-primary-800 size-6' />
               <a href="/" className='text-primary-600 hover:text-primary-800 font-medium'>Home</a>
             </li>
-            <li className='flex items-center space-x-2 hover:bg-primary-100 px-3 py-2 rounded-md transition-colors'>
+            {/* <li className='flex items-center space-x-2 hover:bg-primary-100 px-3 py-2 rounded-md transition-colors'>
               <AiOutlineProduct className='text-primary-600 hover:text-primary-800 size-6' />
               <a href="/products" className='text-primary-600 hover:text-primary-800 font-medium'>Products</a>
-            </li>
+            </li> */}
             <li className='flex items-center space-x-2 hover:bg-primary-100 px-3 py-2 rounded-md transition-colors'>
               <TbCategoryPlus className='text-primary-600 hover:text-primary-800 size-6' />
               <a href="/categories" className='text-primary-600 hover:text-primary-800 font-medium'>Categories</a>
@@ -44,7 +42,6 @@ export default function NavBar() {
           </ul>
         </nav>
 
-        {/* Mobile Menu Button */}
         <button 
           className='md:hidden text-primary-600 hover:text-primary-800 focus:outline-none'
           onClick={toggleMenu}
@@ -54,7 +51,6 @@ export default function NavBar() {
         </button>
       </div>
 
-      {/* Mobile Navigation Menu */}
       {isMenuOpen && (
         <div className='md:hidden mt-4 pb-4 border-t border-primary-200'>
           <nav className='mt-4'>
@@ -69,7 +65,7 @@ export default function NavBar() {
                   <span className='font-medium'>Home</span>
                 </a>
               </li>
-              <li>
+              {/* <li>
                 <a 
                   href="/products" 
                   className='flex items-center space-x-3 text-primary-600 hover:text-primary-800 hover:bg-primary-100 px-3 py-3 rounded-md transition-colors'
@@ -78,7 +74,7 @@ export default function NavBar() {
                   <AiOutlineProduct size={20} />
                   <span className='font-medium'>Products</span>
                 </a>
-              </li>
+              </li> */}
               <li>
                 <a 
                   href="/categories" 

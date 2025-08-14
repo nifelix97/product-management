@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios, { AxiosError } from "axios";
 import type { Product } from '../types/productType';
 
-const API_URL = "https://dummyjson.com/products";
+const API_URL = "https://dummyjson.com";
 
 interface ApiResponse {
   products: Product[];
@@ -11,10 +11,17 @@ interface ApiResponse {
   limit: number;
 }
 
+interface Category {
+    slug: string;
+    name: string;
+    url: string;
+}
+
 export function useProductsAxios() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<AxiosError | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
 
     const request = async <T>(promise: Promise<{ data: T }>): Promise<T> => {
         setLoading(true);
@@ -34,7 +41,7 @@ export function useProductsAxios() {
     // get all products
     const fetchProducts = async () => {
         try {
-            const data = await request<ApiResponse>(axios.get(API_URL));
+            const data = await request<ApiResponse>(axios.get(`${API_URL}/products`));
             setProducts(data.products || []); 
         } catch (error) {
             console.error('Failed to fetch products:', error);
@@ -44,14 +51,72 @@ export function useProductsAxios() {
 
     // get single product
     const getProduct = async (id: number) => {
-        return await request<Product>(axios.get(`${API_URL}/${id}`));
+        return await request<Product>(axios.get(`${API_URL}/products/${id}`));
     }
+
+    //get all categories
+    const fetchCategories = async () => {
+        try {
+            const data = await request<Category[]>(axios.get(`${API_URL}/products/categories`));
+            setCategories(data || []);
+            console.log(data);
+        } catch (error) {
+            console.error('Failed to fetch categories:', error);
+            setCategories([]);
+        }
+    }
+
+    const getCategories = async () => {
+        return await request<Category[]>(axios.get(`${API_URL}/products/categories`));
+    }
+
+    // get products by category
+    const getProductsByCategory = async (category: string) => {
+    try {
+        const data = await request<ApiResponse>(axios.get(`${API_URL}/products/category/${category}`));
+        console.log('Fetched products by category:', category);
+        return data.products || [];
+    } catch (error) {
+        console.error('Failed to fetch products by category:', error);
+        throw error;
+    }
+}
+
+// update product
+const updateProduct = async (id: number, updatedData: Partial<Product>) => {
+    try {
+        const data = await request<Product>(axios.put(`${API_URL}/products/${id}`, updatedData));
+        setProducts((prev) => prev.map((product) => (product.id === id ? data : product)));
+        return data;
+    } catch (error) {
+        console.error('Failed to update product:', error);
+        throw error;
+    }
+};
+
+// delete product
+const deleteProduct = async (id: number) => {
+    try {
+        await request(axios.delete(`${API_URL}/products/${id}`));
+        setProducts((prev) => prev.filter((product) => product.id !== id));
+        console.log('Product deleted from local state');
+    } catch (error) {
+        console.error('Failed to delete product:', error);
+        throw error;
+    }
+};
 
     return { 
         products, 
         loading, 
         error, 
+        categories,
         fetchProducts,
-        getProduct
+        getProduct,
+        fetchCategories,
+        getCategories,
+        getProductsByCategory,
+        updateProduct,
+        deleteProduct
     };
 }

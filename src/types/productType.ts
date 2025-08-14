@@ -19,11 +19,17 @@ interface Meta {
     qrCode: string;
 }
 
+export interface Category{
+  name: string;
+  slug: string;
+  url: string;
+}
+
 export interface Product {
   id: number;
   title: string;
   description: string;
-  category: string;
+  category: Category[];
   price: number;
   discountPercentage: number;
   rating: number;

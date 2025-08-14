@@ -1,3 +1,4 @@
+// Fix ListProduct.tsx
 import { useEffect } from 'react';
 import { useProductsAxios } from '../hooks/useProductsAxios';
 import ProductCard from './ProductCard';
@@ -8,6 +9,12 @@ export default function ProductList() {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Add this callback function
+  const handleProductUpdated = () => {
+    console.log('Product updated, refreshing list...');
+    fetchProducts(); 
+  };
 
   if (loading) return <div className='text-center text-primary-500'>Loading products...</div>;
   if (error) return <div className='text-center text-red-500'>Error: {error.message}</div>;
@@ -22,7 +29,8 @@ export default function ProductList() {
         <ProductCard 
           key={product.id} 
           product={product}
-          className=" hover:shadow-lg transition-shadow hover:border-primary-600"
+          onProductUpdated={handleProductUpdated}
+          className="hover:shadow-lg transition-shadow hover:border-primary-600"
         />
       ))}
     </div>
