@@ -1,13 +1,17 @@
-import Footer from './Footer'
-import NavBar from './NavBar'
-import type { ReactNode } from 'react';
+import NavBar from './NavBar';
 
-export default function Layout({ children }: { children: ReactNode }) {
+interface LayoutProps {
+  children: React.ReactNode;
+  onSearch?: (query: string) => void;
+}
+
+export default function Layout({ children, onSearch }: LayoutProps) {
   return (
     <div>
-      <NavBar />
-      <main>{children}</main>
-      <Footer />
+      <NavBar onSearch={onSearch} />
+      <main>
+        {children}
+      </main>
     </div>
-  )
+  );
 }

@@ -106,6 +106,18 @@ const deleteProduct = async (id: number) => {
     }
 };
 
+// search products
+const searchProducts = async (query: string) => {
+    try {
+        const data = await request<ApiResponse>(axios.get(`${API_URL}/products/search?q=${query}`));
+        console.log('Fetched products by search query:', query);
+        return data.products || [];
+    } catch (error) {
+        console.error('Failed to fetch products by search query:', error);
+        throw error;
+    }
+};
+
     return { 
         products, 
         loading, 
@@ -117,6 +129,7 @@ const deleteProduct = async (id: number) => {
         getCategories,
         getProductsByCategory,
         updateProduct,
-        deleteProduct
+        deleteProduct,
+        searchProducts
     };
 }

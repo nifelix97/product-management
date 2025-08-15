@@ -2,14 +2,16 @@ import React from 'react'
 
 
 interface InPutsProps {
-  label: string;
-  name: string;
+  label?: string;
+  name?: string;
   value: string;
   type?: string;
   placeholder?: string;
   error?: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
+  onSearch?: (query: any) => void;
+
   
 }
 
