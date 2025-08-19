@@ -1,4 +1,5 @@
 import NavBar from './NavBar';
+import Footer from './Footer';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -7,11 +8,12 @@ interface LayoutProps {
 
 export default function Layout({ children, onSearch }: LayoutProps) {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <NavBar onSearch={onSearch} />
-      <main>
+      <main className="flex-1 pb-20"> 
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

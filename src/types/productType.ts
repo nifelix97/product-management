@@ -47,6 +47,7 @@ export interface Product {
   meta: Meta;
   images: string[];
   thumbnail: string;
+  brand?: string;
 }
 
 export type NewProduct = Omit<Product, 'id' | 'createdAt' | 'updatedAt'> & {

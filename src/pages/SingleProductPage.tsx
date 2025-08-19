@@ -1,162 +1,219 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { MdArrowBack } from 'react-icons/md';
-import { useProductsAxios } from '../hooks/useProductsAxios';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useProductContext } from '../context/ProductContext';
 import Layout from '../components/Layout';
+import Button from '../components/Button';
+import { MdStarRate } from "react-icons/md";
 import type { Product } from '../types/productType';
 
 export default function SingleProductPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { loading, error, getProduct } = useProductsAxios();
+  const { getProduct, products, loading, fetchProducts } = useProductContext();
   const [product, setProduct] = useState<Product | null>(null);
-  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string>(''); 
+
+    useEffect(() => {
+    if (product) {
+      setSelectedImage(product.thumbnail || '');
+    }
+  }, [product]);
+
+  const handleImageClick = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+  };
+
+
+  useEffect(() => {
+    if (products.length === 0 && !loading) {
+      console.log('SingleProductPage: Fetching products for context');
+      fetchProducts();
+    }
+  }, [products.length, loading, fetchProducts]);
 
   useEffect(() => {
     const fetchProduct = async () => {
       if (id) {
         try {
+          setIsLoading(true);
+          
+          const contextProduct = products.find(p => p.id === Number(id));
+          if (contextProduct) {
+            console.log('Using context product:', contextProduct);
+            setProduct(contextProduct);
+            setIsLoading(false);
+            return;
+          }
+          
+          console.log('Fetching from API...');
           const productData = await getProduct(Number(id));
           setProduct(productData);
-          if (productData.images && productData.images.length > 0) {
-            setSelectedImage(productData.images[0]);
-          } else {
-            setSelectedImage(productData.thumbnail);
-          }
         } catch (error) {
           console.error('Failed to fetch product:', error);
+          navigate('/');
+        } finally {
+          setIsLoading(false);
         }
       }
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id, navigate, products]);
 
-  const handleImageSelect = (imageUrl: string) => {
-    setSelectedImage(imageUrl);
-  };
+  useEffect(() => {
+    if (id && products.length > 0) {
+      const contextProduct = products.find(p => p.id === Number(id));
+      if (contextProduct) {
+        console.log('Context product updated:', contextProduct);
+        setProduct(contextProduct);
+      }
+    }
+  }, [id, products]);
 
-  if (loading) {
+  if (isLoading || loading) {
     return (
       <Layout>
-        <div className="container mx-auto p-4 flex justify-center items-center min-h-[400px]">
-          <div className="text-primary-500 text-lg">Loading product...</div>
+        <div className="container mx-auto p-4 flex justify-center items-center min-h-[400px] mt-16">
+          <div className="text-primary-500 text-lg">Loading...</div>
         </div>
       </Layout>
     );
   }
 
-  if (error || !product) {
+  if (!product) {
     return (
       <Layout>
-        <div className="container mx-auto p-4 mt-16">
-          <div className="text-center text-red-500 mb-4">
-            {error?.message || 'Product not found'}
-          </div>
+        <div className="container mx-auto p-4 flex justify-center items-center min-h-[400px] mt-16">
+          <div className="text-red-500 text-lg">Product not found</div>
         </div>
       </Layout>
     );
   }
-
-  const allImages = product.images && product.images.length > 0 
-    ? [product.thumbnail, ...product.images].filter((img, index, arr) => arr.indexOf(img) === index)
-    : [product.thumbnail];
 
   return (
     <Layout>
-      <div className="container mx-auto p-4">
-        <MdArrowBack
-          className='text-primary-600 text-3xl cursor-pointer hover:text-primary-700 mt-16'
+      <div className="container mx-auto p-4 mt-16 max-w-4xl">
+        <button
           onClick={() => navigate('/')}
-        />
-        
-        <div className="mt-8 flex flex-col lg:flex-row gap-8">
-          <div className='w-full lg:w-1/2'>
-            <div className="mb-4">
-              <img
-                src={selectedImage || product.thumbnail}
-                alt={product.title}
-                className="w-full h-80 lg:h-96 object-cover rounded-md shadow-md"
-              />
-            </div>
-            
-            {allImages.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {allImages.map((image, index) => (
+          className="text-primary-600 hover:text-primary-800 mb-6 flex items-center"
+        >
+          ← Back to Products
+        </button>
+
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className='flex justify-center'>
+              <div className="space-y-4">
+              {selectedImage && (
+                <div className="relative">
                   <img
-                    key={index}
-                    src={image}
-                    alt={`${product.title} ${index + 1}`}
-                    className={`w-full h-20 object-cover rounded-md cursor-pointer transition-all ${
-                      selectedImage === image 
-                        ? 'border-2 border-primary-500 opacity-100' 
-                        : 'border border-gray-300 opacity-80 hover:opacity-100'
-                    }`}
-                    onClick={() => handleImageSelect(image)}
+                    src={selectedImage}
+                    alt={product.title}
+                    className="w-full h-64 md:h-80 object-cover rounded-lg shadow-md"
                   />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="w-full lg:w-1/2 space-y-4">
-            <div>
-              <div className="inline-block bg-primary-100 text-primary-700 px-3 py-1 rounded-full text-sm font-medium mb-2 capitalize">
-                {Array.isArray(product.category) ? product.category.join(', ') : product.category}
-              </div>
-              <h2 className="text-2xl lg:text-3xl font-bold mb-2">{product.title}</h2>
-              <p className="text-gray-600 mb-4 leading-relaxed">{product.description}</p>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <span className="text-2xl lg:text-3xl font-bold text-primary-600">
-                ${product.price.toFixed(2)}
-              </span>
-              {product.discountPercentage > 0 && (
-                <span className="bg-red-100 text-red-600 px-2 py-1 rounded-full text-sm">
-                  -{product.discountPercentage.toFixed(0)}% OFF
-                </span>
+                </div>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-gray-700">
-                <span className="font-medium">Stock:</span> {product.stock} available
-              </p>
-              <p className="text-gray-700">
-                <span className="font-medium">SKU:</span> {product.sku}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-medium">Rating:</span> {product.rating.toFixed(1)}⭐
-              </p>
-            </div>
-
-            {product.tags && product.tags.length > 0 && (
-              <div>
-                <h3 className="font-medium text-gray-900 mb-2">Tags:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="bg-gray-100 text-gray-700 px-2 py-1 rounded-md text-sm"
+              {product.images && product.images.length > 0 && (
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {product.thumbnail && (
+                    <button
+                      onClick={() => handleImageClick(product.thumbnail)}
+                      className={`relative overflow-hidden rounded-md transition-all duration-200 ${
+                        selectedImage === product.thumbnail 
+                          ? 'ring-2 ring-primary-500 ring-offset-2' 
+                          : 'hover:opacity-80'
+                      }`}
                     >
-                      {tag}
-                    </span>
+                      <img
+                        src={product.thumbnail}
+                        alt={`${product.title} - Thumbnail`}
+                        className="w-full h-16 md:h-20 object-cover"
+                      />
+                    </button>
+                  )}
+             {product.images.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleImageClick(image)}
+                      className={`relative overflow-hidden rounded-md transition-all duration-200 ${
+                        selectedImage === image 
+                          ? 'ring-2 ring-primary-500 ring-offset-2' 
+                          : 'hover:opacity-80'
+                      }`}
+                    >
+                      <img
+                        src={image}
+                        alt={`${product.title} - Image ${index + 1}`}
+                        className="w-full h-16 md:h-20 object-cover"
+                      />
+                    </button>
                   ))}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+            </div>
 
-            <div className="space-y-2">
-              <p className="text-gray-700">
-                <span className="font-medium">Shipping:</span> {product.shippingInformation}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-medium">Warranty:</span> {product.warrantyInformation}
-              </p>
-              <p className="text-gray-700">
-                <span className="font-medium">Return Policy:</span> {product.returnPolicy}
-              </p>
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                  {product.title}
+                </h1>
+                <p className="text-gray-600 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-4">
+                <span className="text-3xl font-bold text-primary-600">
+                  ${product.price.toFixed(2)}
+                </span>
+                {product.discountPercentage > 0 && (
+                  <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                    -{product.discountPercentage.toFixed(0)}% OFF
+                  </span>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Category</p>
+                  <p className="font-semibold capitalize">
+                    {Array.isArray(product.category) ? String(product.category[0]) : String(product.category)}
+                  </p>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Stock</p>
+                  <p className="font-semibold">{product.stock} units</p>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Rating</p>
+                  <div className="flex items-center">
+                    <span className="font-semibold mr-1">{product.rating.toFixed(1)}</span>
+                    <MdStarRate className="text-yellow-500" />
+                  </div>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Brand</p>
+                  <p className="font-semibold">{product.brand || 'N/A'}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  label="Edit Product"
+                  onClick={() => navigate(`/edit/${product.id}`)}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3"
+                />
+                <Button
+                  label="Back to Products"
+                  onClick={() => navigate('/')}
+                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3"
+                />
+              </div>
             </div>
           </div>
         </div>

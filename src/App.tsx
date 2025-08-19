@@ -1,10 +1,16 @@
-import AppRoutes from "./routes/AppRoutes"
+import AppRoutes from './routes/AppRoutes';
+import { ProductProvider } from './context/ProductContext';
+import { CartProvider } from './context/CartContext';
+
 
 function App() {
-
   return (
-    <AppRoutes />
-  )
+    <ProductProvider>
+      <CartProvider>
+        <AppRoutes />
+      </CartProvider>
+    </ProductProvider>
+  );
 }
 
-export default App
+export default App;

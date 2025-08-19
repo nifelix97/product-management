@@ -3,7 +3,9 @@ import { MdStarRate } from "react-icons/md";
 import Button from './Button';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useProductsAxios } from '../hooks/useProductsAxios';
+import { useProductContext } from '../context/ProductContext';
+import { useCartContext } from '../context/CartContext';
+import { FaCartPlus } from 'react-icons/fa';
 
 interface ProductCardProps {
   product: Product
@@ -13,8 +15,26 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, className, onProductUpdated }: ProductCardProps) {
     const navigate = useNavigate();
-    const { updateProduct, deleteProduct } = useProductsAxios();
+    const { updateProduct, deleteProduct } = useProductContext();
     const [isDeleting, setIsDeleting] = useState(false);
+    const { createCart } = useCartContext();
+    const [adding, setAdding] = useState(false);
+
+
+        const handleCreateCart = async () => {
+        setAdding(true);
+        try {
+            await createCart({
+                userId: 1, // or get from auth/user context
+                products: [{ id: product.id, quantity: 1 }]
+            });
+            alert('Cart created with this product!');
+        } catch {
+            alert('Failed to create cart.');
+        } finally {
+            setAdding(false);
+        }
+    };
 
     const handleViewDetails = () => {
         navigate(`/product/${product.id}`);
@@ -57,6 +77,19 @@ const handleDelete = async () => {
                             -{product.discountPercentage.toFixed(0)}%
                         </div>
                     )}
+                    {
+                        <div className="absolute top-2 left-2 bg-primary-200 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">
+                            {product.brand} 
+                        </div>
+                    }
+                     <button
+                    onClick={handleCreateCart}
+                    disabled={adding}
+                    title="Create cart with this product"
+                    className="p-2 rounded-full bg-primary-100 hover:bg-primary-200 text-primary-700 transition"
+                >
+                    <FaCartPlus size={18} />
+                </button>
                 </div>
             )}
 

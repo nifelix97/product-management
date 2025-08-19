@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import { useProductsAxios } from '../hooks/useProductsAxios';
 import ProductCard from './ProductCard';
 import type { Product } from '../types/productType';
+import { useProductContext } from '../context/ProductContext';
 
 interface ProductListProps {
   searchResults?: Product[] | null;
@@ -9,22 +9,15 @@ interface ProductListProps {
 }
 
 export default function ProductList({ searchResults, showingSearchResults }: ProductListProps) {
-  const { products, loading, error, fetchProducts } = useProductsAxios();
+  const { products, loading, error, fetchProducts } = useProductContext();
 
   useEffect(() => {
-    if (!showingSearchResults) {
+    // Always fetch products if we don't have them, regardless of search state
+    if (products.length === 0 && !loading) {
+      console.log('Fetching products because products array is empty');
       fetchProducts();
     }
-  }, [showingSearchResults]);
-
-  const handleProductUpdated = () => {
-    console.log('Product updated, refreshing list...');
-    if (showingSearchResults) {
-      fetchProducts();
-    } else {
-      fetchProducts();
-    }
-  };
+  }, [products.length, loading, fetchProducts]);
 
   const displayProducts = showingSearchResults ? (searchResults || []) : products;
   const isLoading = !showingSearchResults && loading;
@@ -50,7 +43,6 @@ export default function ProductList({ searchResults, showingSearchResults }: Pro
         <ProductCard 
           key={product.id} 
           product={product}
-          onProductUpdated={handleProductUpdated}
           className="hover:shadow-lg transition-shadow hover:border-primary-600"
         />
       ))}

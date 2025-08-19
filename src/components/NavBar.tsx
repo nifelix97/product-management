@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FiPackage } from "react-icons/fi";
 import { CiHome } from "react-icons/ci";
 import { TbCategoryPlus } from "react-icons/tb";
 import { HiMenu, HiX } from "react-icons/hi";
 import { FcSearch } from "react-icons/fc";
+import { MdAddShoppingCart } from "react-icons/md";
+import { useCartContext } from '../context/CartContext';
+
 
 
 interface NavBarProps {
@@ -15,6 +18,11 @@ export default function NavBar({ onSearch }: NavBarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const location = useLocation();
+  const { carts } = useCartContext();
+  const totalCartItems = carts.reduce((total, cart) => total + cart.totalQuantity, 0);
+  const navigate = useNavigate();
+
+  
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -79,6 +87,7 @@ export default function NavBar({ onSearch }: NavBarProps) {
               <span className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400">
                 <FcSearch size={20} />
               </span>
+              
             </div>
           </div>
         )}
@@ -100,6 +109,17 @@ export default function NavBar({ onSearch }: NavBarProps) {
               <Link to="/categories" className='text-primary-600 hover:text-primary-800 font-medium'>
                 Categories
               </Link>
+            </li>
+            <li className='relative flex items-center justify-center w-10 h-10 text-white'>
+          <button className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative' onClick={() => {
+            // Handle cart button click
+            navigate('/cart');
+          }}>
+          <MdAddShoppingCart size={20} className='text-primary-600 font-bold' />
+          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-3 flex items-center justify-center text-[10px]'>
+            {carts.length}
+          </span>
+        </button>
             </li>
           </ul>
         </nav>
@@ -171,6 +191,17 @@ export default function NavBar({ onSearch }: NavBarProps) {
                   <span>Categories</span>
                 </Link>
               </li>
+              <li className='relative flex items-center justify-center w-10 h-10 text-white'>
+          <button className='p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors relative' onClick={() => {
+            // Handle cart button click
+            navigate('/cart');
+          }}>
+          <MdAddShoppingCart size={20} className='text-primary-600 font-bold' />
+          <span className='absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-3 flex items-center justify-center text-[10px]'>
+            {carts.length}
+          </span>
+        </button>
+            </li>
             </ul>
           </nav>
         </div>

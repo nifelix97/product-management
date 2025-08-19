@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useProductsAxios } from '../hooks/useProductsAxios';
+import { useProductContext } from '../context/ProductContext';
 import Layout from '../components/Layout';
 import Button from '../components/Button';
 import InPuts from '../components/InPut';
 import type { Product } from '../types/productType';
 
-export default function EditProductPage() { 
+export default function EditProductPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getProduct, updateProduct, loading } = useProductsAxios();
+  const { getProduct, updateProduct } = useProductContext();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState({
@@ -19,6 +19,8 @@ export default function EditProductPage() {
     stock: '',
     discountPercentage: ''
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -35,6 +37,7 @@ export default function EditProductPage() {
           });
         } catch (error) {
           console.error('Failed to fetch product:', error);
+          alert('Failed to load product. Redirecting to homepage.');
           navigate('/');
         }
       }
@@ -49,6 +52,13 @@ export default function EditProductPage() {
       ...prev,
       [name]: value
     }));
+
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -57,45 +67,94 @@ export default function EditProductPage() {
       ...prev,
       [name]: value
     }));
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!product) return;
-
-    try {
-      const updateData = {
-        title: formData.title,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock),
-        discountPercentage: parseFloat(formData.discountPercentage) || 0
-      };
-
-      await updateProduct(product.id, updateData);
-      alert('Product updated successfully!');
-      navigate('/'); // Navigate back to homepage
-    } catch (error) {
-      alert('Failed to update product. Please try again.');
-      console.error('Update error:', error);
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
     }
   };
 
-  if (loading || !product) {
-    return (
-      <Layout>
-        <div className="container mx-auto p-4 flex justify-center items-center min-h-[400px]">
-          <div className="text-primary-500 text-lg">Loading...</div>
-        </div>
-      </Layout>
-    );
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'Title is required';
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required';
+    }
+
+    const price = parseFloat(formData.price);
+    if (!formData.price || isNaN(price) || price < 0) {
+      newErrors.price = 'Valid price is required';
+    }
+
+    const stock = parseInt(formData.stock);
+    if (!formData.stock || isNaN(stock) || stock < 0) {
+      newErrors.stock = 'Valid stock quantity is required';
+    }
+
+    const discount = parseFloat(formData.discountPercentage);
+    if (formData.discountPercentage && (isNaN(discount) || discount < 0 || discount > 100)) {
+      newErrors.discountPercentage = 'Discount must be between 0 and 100';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!product) return;
+
+  if (!validateForm()) {
+    return;
   }
 
+  try {
+    setIsUpdating(true);
+    
+    const updateData = {
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      price: parseFloat(formData.price),
+      stock: parseInt(formData.stock),
+      discountPercentage: parseFloat(formData.discountPercentage) || 0
+    };
+
+    const updatedProduct = await updateProduct(product.id, updateData);
+    
+    setProduct(updatedProduct);
+    
+    alert('Product updated successfully!');
+    
+    setTimeout(() => {
+      navigate(`/product/${product.id}`);
+    }, 200);
+    
+  } catch (error) {
+    alert('Failed to update product. Please try again.');
+    console.error('Update error:', error);
+  } finally {
+    setIsUpdating(false);
+  }
+};
   return (
     <Layout>
-      <div className="container mx-auto p-4 max-w-2xl">
-        <div className="bg-white rounded-lg shadow-md p-6 mt-16">
-          <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-900">Edit Product</h1>
+      <div className="container mx-auto p-4 mt-16 max-w-2xl">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center mb-6">
+            <button
+              onClick={() => { if (product) navigate(`/product/${product.id}`); }}
+              className="text-primary-600 hover:text-primary-800 mr-4"
+            >
+              ← Back to Product
+            </button>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Edit Product</h1>
+          </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <InPuts
@@ -104,6 +163,7 @@ export default function EditProductPage() {
               value={formData.title}
               type="text"
               placeholder="Enter product title"
+              error={errors.title}
               onChange={handleInputChange}
             />
 
@@ -119,7 +179,11 @@ export default function EditProductPage() {
                 rows={4}
                 placeholder="Enter product description"
                 className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 sm:text-sm"
+                aria-invalid={!!errors.description}
               />
+              {errors.description && (
+                <span className="text-red-500 text-sm">{errors.description}</span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -129,6 +193,7 @@ export default function EditProductPage() {
                 value={formData.price}
                 type="number"
                 placeholder="0.00"
+                error={errors.price}
                 onChange={handleInputChange}
               />
 
@@ -138,6 +203,7 @@ export default function EditProductPage() {
                 value={formData.stock}
                 type="number"
                 placeholder="0"
+                error={errors.stock}
                 onChange={handleInputChange}
               />
 
@@ -147,6 +213,7 @@ export default function EditProductPage() {
                 value={formData.discountPercentage}
                 type="number"
                 placeholder="0.00"
+                error={errors.discountPercentage}
                 onChange={handleInputChange}
               />
             </div>
@@ -154,15 +221,17 @@ export default function EditProductPage() {
             <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <Button
                 type="submit"
-                label="Update Product"
+                label={isUpdating ? "Updating..." : "Update Product"}
                 onClick={() => {}}
                 className="flex-1 bg-green-500 hover:bg-green-600 text-white font-medium py-3"
+                disabled={isUpdating}
               />
               <Button
                 type="button"
                 label="Cancel"
-                onClick={() => navigate('/')}
+                onClick={() => { if (product) navigate(`/product/${product.id}`); }}
                 className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-medium py-3"
+                disabled={isUpdating}
               />
             </div>
           </form>

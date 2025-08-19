@@ -43,6 +43,7 @@ export function useProductsAxios() {
         try {
             const data = await request<ApiResponse>(axios.get(`${API_URL}/products`));
             setProducts(data.products || []); 
+            console.log('Fetched products:', data.products.length);
         } catch (error) {
             console.error('Failed to fetch products:', error);
             setProducts([]);
@@ -86,7 +87,15 @@ export function useProductsAxios() {
 const updateProduct = async (id: number, updatedData: Partial<Product>) => {
     try {
         const data = await request<Product>(axios.put(`${API_URL}/products/${id}`, updatedData));
-        setProducts((prev) => prev.map((product) => (product.id === id ? data : product)));
+        
+        setProducts((prev) => {
+            const updatedProducts = prev.map((product) => (product.id === id ? data : product));
+            console.log('Products state updated. Updated product:', data);
+            console.log('All products count:', updatedProducts.length);
+            return updatedProducts;
+        });
+        
+        console.log('Product updated:', data);
         return data;
     } catch (error) {
         console.error('Failed to update product:', error);
@@ -118,6 +127,20 @@ const searchProducts = async (query: string) => {
     }
 };
 
+// creating product
+
+const createProduct = async (newProduct: Omit<Product, 'id'>) => {
+    try {
+        const data = await request<Product>(axios.post(`${API_URL}/products/add`, newProduct));
+        setProducts((prev) => [...prev, data]);
+        console.log('Product created:', data);
+        return data;
+    } catch (error) {
+        console.error('Failed to create product:', error);
+        throw error;
+    }
+};
+
     return { 
         products, 
         loading, 
@@ -130,6 +153,7 @@ const searchProducts = async (query: string) => {
         getProductsByCategory,
         updateProduct,
         deleteProduct,
-        searchProducts
+        searchProducts,
+        createProduct
     };
 }

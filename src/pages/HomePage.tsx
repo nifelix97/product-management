@@ -1,17 +1,24 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Button from '../components/Button';
 import Layout from '../components/Layout';
 import ProductList from '../components/ListProduct';
 import { useNavigate } from 'react-router-dom';
-import { useProductsAxios } from '../hooks/useProductsAxios';
+import { useProductContext } from '../context/ProductContext';
 import type { Product } from '../types/productType';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { searchProducts} = useProductsAxios();
+  const { searchProducts, products, fetchProducts } = useProductContext();
   const [searchResults, setSearchResults] = useState<Product[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (products.length === 0) {
+      console.log('HomePage: Fetching products because array is empty');
+      fetchProducts();
+    }
+  }, [products.length, fetchProducts]);
 
   const debounce = (func: Function, wait: number) => {
     let timeout: NodeJS.Timeout;
@@ -59,7 +66,7 @@ export default function HomePage() {
     <Layout onSearch={handleSearch}>
       <div className="container mx-auto p-4">
         <div className='mt-16 text-right p-4'>
-          <Button label="Add Product" onClick={() => navigate('/')} />
+          <Button label="Add Product" onClick={() => navigate('/add')} />
         </div>
 
         {searchQuery && (
