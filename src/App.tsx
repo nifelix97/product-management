@@ -1,15 +1,19 @@
 import AppRoutes from './routes/AppRoutes';
 import { ProductProvider } from './context/ProductContext';
 import { CartProvider } from './context/CartContext';
+import { UserProvider } from './context/UserContext';
+
 
 
 function App() {
   return (
-    <ProductProvider>
-      <CartProvider>
-        <AppRoutes />
-      </CartProvider>
-    </ProductProvider>
+    <UserProvider>
+      <ProductProvider>
+        <CartProvider>
+          <AppRoutes />
+        </CartProvider>
+      </ProductProvider>
+    </UserProvider>
   );
 }
 

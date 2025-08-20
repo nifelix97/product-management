@@ -29,7 +29,7 @@ const InPuts: React.FC<InPutsProps> = ({
 }) => {
   return (
     <div>
-      <label htmlFor={name} className='block text-sm font-medium text-gray-700 mb-1'>{label}</label>
+      <label htmlFor={name} className='block text-sm font-medium text-primary-50 mb-1'>{label}</label>
       <input
         id={name}
         name={name}

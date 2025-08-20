@@ -200,19 +200,59 @@ export default function SingleProductPage() {
                   <p className="text-sm text-gray-600">Brand</p>
                   <p className="font-semibold">{product.brand || 'N/A'}</p>
                 </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Warranty Information</p>
+                  <p className="font-semibold">{product.warrantyInformation || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Availability Status</p>
+                  <p className="font-semibold">{product.availabilityStatus || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Shipping Information</p>
+                  <p className="font-semibold">{product.shippingInformation || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Minimum Order Quantity</p>
+                  <p className="font-semibold">{product.minimumOrderQuantity || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Return Policy</p>
+                  <p className="font-semibold">{product.returnPolicy || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Weight</p>
+                  <p className="font-semibold">{product.weight || 'N/A'}</p>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600">Dimensions</p>
+                  <p className="font-semibold">
+                    {Array.isArray(product.reviews)
+                      ? `${product.reviews.length} review${product.reviews.length !== 1 ? 's' : ''}`
+                      : 'N/A'}
+                  </p>
+                </div>
+                <div className='bg-gray-50 p-4 rounded-lg'>
+                  <p className="text-sm text-gray-600">SKU</p>
+                  <p className="font-semibold">
+                    {
+                      product.sku
+                    }
+                  </p>
+                </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button
+                {/* <Button
                   label="Edit Product"
                   onClick={() => navigate(`/edit/${product.id}`)}
                   className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3"
-                />
-                <Button
+                /> */}
+                {/* <Button
                   label="Back to Products"
                   onClick={() => navigate('/')}
                   className="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3"
-                />
+                /> */}
               </div>
             </div>
           </div>

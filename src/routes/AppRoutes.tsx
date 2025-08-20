@@ -10,13 +10,14 @@ import SinglecartPage from '../pages/SinglecartPage';
 import UserCartsPage from '../pages/UserCartsPage';
 import EditCartPage from '../pages/EditCartPage';
 import CreateCartPage from '../pages/CreateCartPage';
+import Login from '../pages/Auth/LoginPage';
 
 
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path='/' element={<HomePage />} />
+      <Route path='/home' element={<HomePage />} />
       <Route path='/product/:id' element={<SingleProductPage />} />
       <Route path='/categories' element={<CategoryPage />} />
       <Route path='/category/:category' element={<ProductCategory />} />
@@ -27,6 +28,7 @@ export default function AppRoutes() {
       <Route path="/user/:userId/carts" element={<UserCartsPage />} />
       <Route path="/cart/:id/edit" element={<EditCartPage />} />
       <Route path="/cart/create" element={<CreateCartPage />} />
+      <Route path="/" element={<Login />} />
     </Routes>
   )
 }

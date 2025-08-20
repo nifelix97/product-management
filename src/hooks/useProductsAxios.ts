@@ -108,7 +108,7 @@ const deleteProduct = async (id: number) => {
     try {
         await request(axios.delete(`${API_URL}/products/${id}`));
         setProducts((prev) => prev.filter((product) => product.id !== id));
-        console.log('Product deleted from local state');
+        console.log('Product deleted from local state', id);
     } catch (error) {
         console.error('Failed to delete product:', error);
         throw error;

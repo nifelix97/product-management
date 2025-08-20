@@ -1,12 +1,11 @@
 import { type Product } from '../types/productType';
-import { MdStarRate } from "react-icons/md";
-import Button from './Button';
+import { MdDelete, MdEdit, MdStarRate, MdVisibility } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useProductContext } from '../context/ProductContext';
 import { useCartContext } from '../context/CartContext';
 import { FaCartPlus } from 'react-icons/fa';
-
+import { useUserContext } from '../context/UserContext';
 interface ProductCardProps {
   product: Product
   className?: string
@@ -19,13 +18,19 @@ export default function ProductCard({ product, className, onProductUpdated }: Pr
     const [isDeleting, setIsDeleting] = useState(false);
     const { createCart } = useCartContext();
     const [adding, setAdding] = useState(false);
+    const { user } = useUserContext();
 
 
         const handleCreateCart = async () => {
         setAdding(true);
         try {
+            if (!user) {
+                alert('You must be logged in to create a cart.');
+                navigate('/');
+                return;
+            }
             await createCart({
-                userId: 1, // or get from auth/user context
+                userId: user.id,
                 products: [{ id: product.id, quantity: 1 }]
             });
             alert('Cart created with this product!');
@@ -64,7 +69,7 @@ const handleDelete = async () => {
 };
 
     return(
-        <div className={`border border-primary-200 hover:border-primary-400 p-3 sm:p-4 lg:p-5 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full flex flex-col ${className}`}>
+        <div className={` hover:border-primary-400 p-3 sm:p-4 lg:p-5 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 bg-white h-full flex flex-col ${className}`}>
             {product.thumbnail && (
                 <div className="relative overflow-hidden rounded-md mb-3 sm:mb-4">
                     <img 
@@ -73,40 +78,33 @@ const handleDelete = async () => {
                         className="w-full h-40 sm:h-44 md:h-48 lg:h-52 object-cover hover:scale-105 transition-transform duration-300"
                     />
                     {product.discountPercentage > 0 && (
-                        <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        <div className="absolute top-2 right-2  text-red-500 px-2 py-1 rounded-full text-xs font-semibold">
                             -{product.discountPercentage.toFixed(0)}%
                         </div>
                     )}
-                    {
+                    {/* {
                         <div className="absolute top-2 left-2 bg-primary-200 text-gray-800 px-2 py-1 rounded-full text-xs font-semibold">
                             {product.brand} 
                         </div>
-                    }
-                     <button
-                    onClick={handleCreateCart}
-                    disabled={adding}
-                    title="Create cart with this product"
-                    className="p-2 rounded-full bg-primary-100 hover:bg-primary-200 text-primary-700 transition"
-                >
-                    <FaCartPlus size={18} />
-                </button>
+                    } */}
+                    
                 </div>
             )}
 
             <div className="flex-1 flex flex-col">
-                <h2 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-800 hover:text-primary-700 transition-colors leading-tight mb-2 line-clamp-2">
+                <h2 className=" sm:text-base lg:text-lg text-gray-800 hover:text-primary-700 transition-colors leading-tight mb-2 line-clamp-2">
                     {product.title}
                 </h2>
 
                 <div className="mb-3 sm:mb-4">
-                    <span className='text-primary-600 font-bold text-lg sm:text-xl lg:text-2xl'>
+                    <span className='text-primary-600 text-lg sm:text-xl lg:text-2xl'>
                         ${product.price.toFixed(2)}
                     </span>
                 </div>
 
                 <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-3 mb-4'>
                     <div className='flex items-center'>
-                        <div className='bg-primary-100 text-primary-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium capitalize'>
+                        <div className='bg-gray-100 text-primary-700 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium capitalize'>
                             {Array.isArray(product.category) ? String(product.category[0]) : String(product.category)}
                         </div>
                     </div>
@@ -128,44 +126,69 @@ const handleDelete = async () => {
                 </div>
 
                 <div className='mt-auto'>
-                    <div className='flex flex-col sm:hidden gap-2'>
-                        <Button 
-                            label="View Details" 
-                            onClick={handleViewDetails} 
-                            className='w-full text-xs py-2 bg-primary-500 hover:bg-primary-600'
-                        />
-                        <div className='flex gap-2'>
-                            <Button 
-                                label="Edit" 
-                                onClick={handleUpdate} 
-                                className='flex-1 text-xs py-2 bg-blue-500 hover:bg-blue-600 text-white' 
-                            />
-                            <Button 
-                                label={isDeleting ? "..." : "Delete"} 
-                                onClick={handleDelete} 
-                                className='flex-1 text-xs py-2 bg-red-500 hover:bg-red-600 text-white' 
-                                disabled={isDeleting}
-                            />
-                        </div>
+                    <div className='flex sm:flex-row gap-2 sm:gap-3'>
+                        <div className='flex sm:hidden gap-2'>
+                         <button 
+                        onClick={handleViewDetails} 
+                            title="View Details"
+                            
+                            className='flex items-center justify-center text-primary-600 hover:text-primary-800 p-2 rounded transition'
+                        >
+                            <MdVisibility size={18} />
+                        </button>
+                        <button
+                            onClick={handleUpdate}
+                            title="Edit"
+                            className='flex items-center justify-center text-primary-600 hover:text-primary-800 p-2 rounded transition'
+                        >
+                            <MdEdit size={18} />
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            title="Delete"
+                            className='flex items-center justify-center text-red-600 hover:text-red-800 p-2 rounded transition'
+                            disabled={isDeleting}
+                        >
+                            <MdDelete size={18} />
+                        </button>
                     </div>
 
-                    <div className='hidden sm:flex gap-1 lg:gap-2'>
-                        <Button 
-                            label="Details" 
-                            onClick={handleViewDetails} 
-                            className='flex-1 text-xs lg:text-sm py-2 bg-primary-500 hover:bg-primary-600'
-                        />
-                        <Button 
-                            label="Edit" 
-                            onClick={handleUpdate} 
-                            className='flex-1 text-xs lg:text-sm py-2 bg-secondary-600 hover:bg-yellow-400 text-white' 
-                        />
-                        <Button 
-                            label={isDeleting ? "..." : "Delete"} 
-                            onClick={handleDelete} 
-                            className='flex-1 text-xs lg:text-sm py-2 bg-red-500 hover:bg-red-600 text-white' 
+                    <div className='hidden sm:flex'>
+                        <button 
+                        onClick={handleViewDetails} 
+                            title="View Details"
+                            
+                            className='flex items-center justify-center text-primary-600 hover:text-primary-800 p-2 rounded transition'
+                        >
+                            <MdVisibility size={18} />
+                        </button>
+                        <button
+                            onClick={handleUpdate}
+                            title="Edit"
+                            className='flex items-center justify-center text-primary-600 hover:text-primary-800 p-2 rounded transition'
+                        >
+                            <MdEdit size={18} />
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            title="Delete"
+                            className='flex items-center justify-center text-red-600 hover:text-red-800 p-2 rounded transition'
                             disabled={isDeleting}
-                        />
+                        >
+                            <MdDelete size={18} />
+                        </button>
+                    </div>
+                        <div className='flex-1 flex items-center justify-center'>
+                              <button
+                    onClick={handleCreateCart}
+                    disabled={adding}
+                    title="Create cart with this product"
+                    className="p-2 rounded-full bg-primary-200  hover:bg-primary-200 text-white transition"
+                >
+                    <FaCartPlus size={18} />
+                </button>
+                        </div>
+                       
                     </div>
                 </div>
             </div>
